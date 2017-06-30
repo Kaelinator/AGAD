@@ -1,5 +1,5 @@
 
-var words = [ "game", "day", "java", "script", "rainbow", "program", "p5", "bunny", "youtube", "github", "gay", "straight" ];
+var words = [ "game", "day", "java", "script", "rainbow", "program", "p5", "bunny", "youtube", "github" ];
 
 var focus;
 var field = [];
