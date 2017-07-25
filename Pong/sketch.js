@@ -1,22 +1,28 @@
 
-var p1, p2;
-var p1V, p2V;
-var p1S, p2S;
+const INITIAL_BALL_SPEED = 3;
+const BALL_RADIUS = 20;
 
-var ball, ballV;
+const PADDLE_WIDTH = 10;
+const PADDLE_HEIGHT = 100;
+
+var player1Position, player2Position;
+var player1Velocity, player2Velocity;
+var player1Score, player2Score;
+
+var ball, ballVelocity;
 
 function setup() {
 
   createCanvas(600, 400);
 
-  p1 = p2 = height / 2 - 50;
+  player1Position = player2Position = height / 2 - 50; // initialize player position to mid screen
 
-  p1V = p2V = 0;
-  p1S = p2S = 0;
+  player1Velocity = player2Velocity = 0;
+  player1Score = player2Score = 0;
 
-  ball = createVector(width / 2, height / 2);
-  ballV = createVector(random(-1, 1), random(-1, 1));
-  ballV.setMag(3);
+  ball = createVector(width / 2, height / 2); // initialize ball in the middle
+  ballVelocity = createVector(random(-1, 1), random(-1, 1)); // give the ball a random trajectory
+  ballVelocity.setMag(INITIAL_BALL_SPEED); // set the speed to 3
 
   textAlign(CENTER);
   textSize(30);
@@ -28,66 +34,65 @@ function draw() {
   background(51);
 
   /* draw paddles */
-  rect(20, p1, 10, 100);
-  rect(width - 30, p2, 10, 100);
+  rect(PADDLE_WIDTH * 2, player1Position, PADDLE_WIDTH, PADDLE_HEIGHT);
+  rect(width - (PADDLE_WIDTH * 3), player2Position, PADDLE_WIDTH, PADDLE_HEIGHT);
 
   /* draw ball */
-  ellipse(ball.x, ball.y, 20);
+  ellipse(ball.x, ball.y, BALL_RADIUS);
 
   /* draw scoreboard */
-  text(p1S + "  |  " + p2S, width / 2, 50);
+  text(player1Score + "  |  " + player2Score, width / 2, 50);
 
   handlePaddles();
 
   handleBall();
-
 }
 
 function handleBall() {
 
-  ball.x += ballV.x;
-  ball.y += ballV.y;
+  ball.x += ballVelocity.x;
+  ball.y += ballVelocity.y;
 
   /* top & bottom collisions */
   if (ball.y > height || ball.y < 0)
-    ballV.y *= -1;
+    ballVelocity.y *= -1; // reverse y-velocity
 
   /* paddle collisions */
-  if (ball.x <= 30) {
+  if (ball.x <= PADDLE_WIDTH * 3) { // within range on the left side
 
-    // out of bounds
-    if (ball.x <= 10) {
-      p2S++;
+    if (ball.x <= PADDLE_WIDTH) { // out of bounds
+
+      player2Score++;
       reset();
       return;
     }
 
-    // right paddle
-    if (ball.y > p1 && ball.y < p1 + 100) {
+    // check collision on left paddle
+    if (ball.y > player1Position && ball.y < player1Position + PADDLE_HEIGHT) {
 
-      if (ballV.x < 0) {
+      if (ballVelocity.x < 0) { // prevent the ball from getting stuck inside paddle
 
-        ballV.x *= -1;
-        ballV.mult(random(1, 1.1));
+        ballVelocity.x *= -1;
+        ballVelocity.mult(random(1, 1.1));
       }
     }
 
-  } else if (ball.x >= width - 30) {
+  } else if (ball.x >= width - (PADDLE_WIDTH * 3)) { // right paddle
 
-    // out of bounds
-    if (ball.x >= width - 10) {
-      p1S++;
+    if (ball.x >= width - PADDLE_WIDTH) { // out of bounds
+
+      player1Score++;
       reset();
       return;
     }
 
-    // left paddle
-    if (ball.y > p2 && ball.y < p2 + 100) {
+    // check collision on right paddle
+    if (ball.y > player2Position && ball.y < player2Position + PADDLE_HEIGHT) {
 
-      if (ballV.x > 0) {
+      if (ballVelocity.x > 0) { // prevent the ball from getting stuck inside paddle
 
-        ballV.x *= -1;
-        ballV.mult(random(1, 1.1));
+        ballVelocity.x *= -1;
+        ballVelocity.mult(random(1, 1.1));
       }
     }
 
@@ -97,8 +102,8 @@ function handleBall() {
 
 function reset() {
 
-  ballV.setMag(3);
-  ball = createVector(width / 2, height / 2);
+  ballVelocity.setMag(INITIAL_BALL_SPEED); // set to default speed
+  ball = createVector(width / 2, height / 2); // center
 }
 
 function handlePaddles() {
@@ -107,32 +112,33 @@ function handlePaddles() {
   if (keyIsDown(87)) {
     /* move up */
 
-    p1V -= 5;
+    player1Velocity -= 5;
   } else if (keyIsDown(83)) {
     /* move down */
 
-    p1V += 5;
+    player1Velocity += 5;
   }
 
   /* player two controls */
   if (keyIsDown(UP_ARROW)) {
     /* move up */
 
-    p2V -= 5;
+    player2Velocity -= 5;
   } else if (keyIsDown(DOWN_ARROW)) {
     /* move down */
 
-    p2V += 5;
+    player2Velocity += 5;
   }
 
-  p1 += p1V;
-  p2 += p2V;
+	/* change position */
+  player1Position += player1Velocity;
+  player2Position += player2Velocity;
 
-  /* "friction" */
-  p1V *= 0.4;
-  p2V *= 0.4;
+  /* friction */
+  player1Velocity *= 0.4;
+  player2Velocity *= 0.4;
 
   /* constrain paddles */
-  p1 = constrain(p1, 0, height - 100);
-  p2 = constrain(p2, 0, height - 100);
+  player1Position = constrain(player1Position, 0, height - PADDLE_HEIGHT);
+  player2Position = constrain(player2Position, 0, height - PADDLE_HEIGHT);
 }
