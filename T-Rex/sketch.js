@@ -1,112 +1,121 @@
 
-var speed;
-var y;
-var yVel;
-var onGround;
+var horizon;
+var obstacleSpeed;
 
 var score;
-
-var horizon;
 var obstacles = [];
 
+var dino;
+
 function setup() {
+
   createCanvas(600, 200);
 
   textAlign(CENTER);
 
   horizon = height - 40;
-  y = 20;
-  score = yVel = 0;
-  speed = 6;
-  onGround = false;
+
+	score = 0;
+	obstacleSpeed = 6;
+
+	var size = 20;
+	dino = new TRex(size * 2, height - horizon, size);
+
+  textSize(20);
 }
 
 function draw() {
   background(51);
 
+	drawHUD();
+
+	handleLevel(frameCount);
+
+	dino.update(horizon);
+
+  handleObstacles();
+}
+
+/**
+	* draws horizon & score
+	*/
+function drawHUD() {
+
   /* draw horizon */
   stroke(255);
+	strokeWeight(2);
   line(0, horizon, width, horizon);
 
-  fill('#999999');
-  ellipse(40, y, 40);
-
-  if (frameCount % 120 === 0) {
-    speed *= 1.05;
-  }
-
-  if (frameCount % 30 === 0) {
-    var n = noise(frameCount);
-    if (n > 0.5)
-      newObstacle(n);
-  }
-
-  score++;
-  textSize(20);
+	/* draw score */
+	noStroke();
   text("Score: " + score, width / 2, 30);
 
-  updateObstacles();
-  handleTRex();
+	/* draw T-Rex */
+	dino.draw();
 }
 
-function updateObstacles() {
+/**
+	*	updates, draws, and cleans out the obstacles
+	*/
+function handleObstacles() {
 
   for (var i = obstacles.length - 1; i >= 0; i--) {
-    obstacles[i].x -= speed;
-    var x = obstacles[i].x;
-    var size = obstacles[i].size;
-    var s2 = size / 2;
 
-    if (x > -30) {
-      /* if it's onscreen */
+		obstacles[i].update(obstacleSpeed);
+		obstacles[i].draw();
 
-      fill(obstacles[i].color);
-      rect(x, horizon - size, size, size);
-      var x1 = x + s2;
-      var y1 = horizon - s2;
-      if (dist(x1, y1, 40, y) < s2 + 20) {
-        /* collision! */
+		if (obstacles[i].hits(dino)) // if there's a collision
+			endGame();
 
-        noStroke();
-        textSize(40);
-        text("GAME OVER", width / 2, height / 2);
-        textSize(20);
-        text("Press f5 to restart", width / 2, height / 2 + 20);
-        noLoop();
-      }
-    } else {
-      /* delete from array */
-
-      obstacles.splice(i, 1);
-    }
+    if (!obstacles[i].onScreen) // if it's no longer showing
+      obstacles.splice(i, 1); // delete from array
   }
 }
 
+
+/**
+	* speeds game up, pushes new obstacles, & handles score
+	*/
+function handleLevel(n) {
+
+  if (n % 30 === 0) { // every 0.5 seconds
+
+    var n = noise(n); // noisey
+
+    if (n > 0.5)
+      newObstacle(n); // push new obstacle
+
+	  if (n % 120 === 0) // every 2 seconds
+	    obstacleSpeed *= 1.05; // speed up
+  }
+
+	score++;
+}
+
+/**
+	* pushes random obstacle
+	*/
 function newObstacle(n) {
 
-  var obs = new Obstacle(n * 50, color(random(255), random(255), random(255)));
+	var col = color(random(255), random(255), random(255));
+	var size = random(30) + 20;
+  var obs = new Obstacle(width + size, size, horizon, col);
 
   obstacles.push(obs);
 }
 
-function handleTRex() {
+function keyPressed() {
 
-  if (y + 20 + yVel < horizon) {
+	if ((keyCode === UP_ARROW || keyCode === 32) && dino.onGround) // jump if possible
+		dino.jump();
+}
 
-    yVel += map(frameCount, 0, 3600, 0.7, 2);
-    onGround = false;
-  } else {
-    yVel = 0;
-    onGround = true;
-  }
+function endGame() {
 
-  if (mouseIsPressed || keyIsDown(UP_ARROW) || keyIsDown(32)) {
-    if (onGround) {
-      yVel -= map(frameCount, 0, 3600, 9, 15);
-      onGround = false;
-    }
-  }
-
-  /* movement */
-  y += yVel;
+	noLoop();
+  noStroke();
+  textSize(40);
+  text("GAME OVER", width / 2, height / 2);
+  textSize(20);
+  text("Press f5 to restart", width / 2, height / 2 + 20);
 }
