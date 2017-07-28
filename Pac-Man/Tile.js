@@ -1,132 +1,141 @@
-
-var FIELD = [
-  "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-  "0,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1,1,1,0",
-  "0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,3,0,0,0",
-  "0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0",
-  "0,1,1,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-  "0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0",
-  "0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0",
-  "0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-  "0,0,0,0,0,0,1,1,0,0,1,0,0,1,1,0,0,0,0,0",
-  "0,1,1,1,1,1,1,1,0,4,1,4,0,1,1,1,1,3,1,0",
-  "0,1,1,1,1,3,1,1,0,4,1,4,0,1,1,1,1,1,1,0",
-  "0,0,0,0,0,0,1,1,0,1,0,0,0,1,1,0,0,0,0,0",
-  "0,1,1,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-  "0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0",
-  "0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0",
-  "0,1,1,1,1,1,1,1,1,1,5,1,1,1,1,1,1,1,1,0",
-  "0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0",
-  "0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0",
-  "0,1,1,1,1,3,1,1,1,1,1,1,1,1,1,1,1,3,1,0",
-  "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+/**
+	* all different types of tiles
+	*/
+const TYPES = [
+	"BARRIER",
+	"BISCUIT",
+	"OPEN",
+	"CHERRY",
+	"GHOST",
+	"PACMAN"
 ];
 
-var TYPES = ["BARRIER", "BISCUIT", "OPEN", "CHERRY", "GHOST", "PACMAN"];
+const TILE_SPEED = 0.2; // speed of tile's movement
 
-var HALF_SIZE = SIZE / 2;
-var THIRD_SIZE = SIZE / 3;
-var QUARTER_SIZE = SIZE / 4;
+const DIMENSIONS = 20;	// size of field
 
-function Tile(x, y, type, id) {
+const SIZE = 25;	// size of each tile
+const HALF_SIZE = SIZE / 2;
+const THIRD_SIZE = SIZE / 3;
+const QUARTER_SIZE = SIZE / 4;
+
+/**
+ * makes up the field
+ * tiles can be moved
+ * tiles can restrict movement
+ */
+function Tile(x, y, type, behavior) {
 
   this.x = x;
   this.y = y;
   this.type = type;
 
-  this.dX = -1;
-  this.dY = -1;
+	this.destination = (-1, -1);
   this.moving = false;
 
   this.intact = true;
 
   this.speed = 0.2;
 
-  this.id = id;
+  this.behavior = behavior; // GHOSTs only;	0 = agressive, 1 = nonchalant
 }
 
+/**
+ *	handles movement, eating, and AI
+ */
 Tile.prototype.update = function() {
 
-  if (!this.intact)
+  if (!this.intact) // no need to update
     return;
 
   /* movement */
   if (this.moving) {
 
-    this.x = lerp(this.x, this.dX, this.speed);
-    this.y = lerp(this.y, this.dY, this.speed);
+		console.log(this.x, this.y, "before lerp");
+		console.log(this.destination.x, this.destination.y);
 
-    if (Math.abs(this.x - this.dX) < 0.1 && Math.abs(this.y - this.dY) < 0.1) {
+    this.x = lerp(this.x, this.destination.x, this.speed);
+    this.y = lerp(this.y, this.destination.y, this.speed);
 
-      this.x = this.dX;
-      this.y = this.dY;
+		console.log(this.x, this.y, "after lerp");
 
-      this.moving = false;
+		var distanceX = Math.abs(this.x - this.destination.x);
+		var distanceY = Math.abs(this.y - this.destination.y);
+
+    if (distanceX < 0.1 && distanceY < 0.1) { // round to the nearest position
+
+      this.x = this.destination.x;
+      this.y = this.destination.y;
+
+      this.moving = false; // done moving
     }
   }
 
+  /* eating */
+  if (this.type == "PACMAN") { // only PACMAN may eat!
 
+		// Tile to which Pac-man is moving
+    var destinationTile = getTile(Math.floor(this.x), Math.floor(this.y));
 
-  if (this.type == "PACMAN") {
-    /* eating */
+    if (destinationTile.intact) {
 
-    var dTileX = Math.floor(this.x);
-    var dTileY = Math.floor(this.y);
-
-    var dTile = getTile(dTileX, dTileY);
-
-    if (dTile.intact) {
-
-      switch (dTile.type) {
+      switch (destinationTile.type) {
 
         case "BISCUIT":
-          score++;
-          dTile.intact = false;
+          score++;	// worth 1 point
+          destinationTile.intact = false;
           break;
 
         case "CHERRY":
-          score += 10;
-          dTile.intact = false;
+          score += 10;	// worth 10 points
+          destinationTile.intact = false;
           break;
       }
     }
 
-    if (score == endScore)
+    if (score == endScore) // check if Pac-man has won
       endGame(true);
 
   } else if (this.type == "GHOST") {
-    /* AI */
+    /* GHOST AI */
 
-    if (Math.abs(pacman.x - this.x) < 0.3 && Math.abs(pacman.y - this.y) < 0.3)
+		var distance = dist(pacman.x, pacman.y, this.x, this.y);
+
+    if (distance < 0.3) // if Pac-man has touched a GHOST
       endGame(false);
 
-    if (this.moving)
+		/* movement */
+    if (this.moving) // can't move multiple times at once
       return;
 
+		/* relative possible movements */
     var possibleMoves = [
-      getTile(this.x - 1, this.y),
-      getTile(this.x + 1, this.y),
-      getTile(this.x, this.y - 1),
-      getTile(this.x, this.y + 1),
+
+      getTile(this.x - 1, this.y),	// left
+      getTile(this.x + 1, this.y),	// right
+      getTile(this.x, this.y - 1),	// top
+      getTile(this.x, this.y + 1),	// bottom
     ];
 
-    /* sort by distance */
+    /* sort by distance from Pac-man */
     possibleMoves.sort(function (a, b) {
+
       var aD = dist(a.x, a.y, pacman.x, pacman.y);
       var bD = dist(b.x, b.y, pacman.x, pacman.y);
 
       return aD - bD;
     });
 
-    if (this.id === 0) {
+    if (this.behavior === 0) {	// if they're agressive
 
       for (var i = 0; i < possibleMoves.length; i++) {
 
-        if (this.move(possibleMoves[i].x, possibleMoves[i].y, false)) {
+        if (this.move(possibleMoves[i].x, possibleMoves[i].y, false)) { // attempt to move
           break;
         }
       }
     } else {
+			// move nonchalantly
       var index = Math.floor(random(4));
       this.move(possibleMoves[index].x, possibleMoves[index].y, false);
     }
@@ -168,6 +177,8 @@ Tile.prototype.draw = function() {
       fill("#FF00EE");
       stroke(0);
       strokeWeight(1);
+
+			/* draw a triangle */
       beginShape();
       vertex(this.x * SIZE + HALF_SIZE, this.y * SIZE + QUARTER_SIZE);
       vertex(this.x * SIZE + QUARTER_SIZE, this.y * SIZE + (QUARTER_SIZE * 3));
@@ -188,41 +199,45 @@ Tile.prototype.draw = function() {
 
 };
 
+/**
+ * calculates movement for use within update function
+ * returns whether it's a valid move or not
+ */
 Tile.prototype.move = function(x, y, relative) {
 
-  var dY, dX;
+  var destinationX, destinationY;
 
-  if (relative) {
+  if (relative) { // relative to the tile
 
-    dX = this.x + x;
-    dY = this.y + y;
+    destinationX = this.x + x;
+    destinationY = this.y + y;
   } else {
 
-    dX = x;
-    dY = y;
+    destinationX = x;
+    destinationY = y;
   }
 
-  if (this.moving)
+  if (this.moving) // no need to recalculate everything
     return false;
 
-  var destinationTile = getTile(dX, dY);
-
-  // if (!destinationTile)
-  //   return false;
+  var destinationTile = getTile(destinationX, destinationY);
 
   var type = destinationTile.type;
 
-  if ((type == "BARRIER" && this.type != "BARRIER") ||
-      (type == "GHOST" && this.type == "GHOST"))
+  if ((type == "BARRIER" && this.type != "BARRIER") || 	// only certain tiles may
+      (type == "GHOST" && this.type == "GHOST")) 				// move to other certain tiles
     return false;
 
-  this.moving = true;
-  this.dX = dX;
-  this.dY = dY;
+  this.moving = true; // begin movement next update
+	this.destination = createVector(destinationX, destinationY);
 
   return true;
 };
 
+/**
+ * returns tile with coordinates (x, y)
+ */
 function getTile(x, y) {
+
   return field[y * DIMENSIONS + x];
 }
