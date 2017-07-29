@@ -1,4 +1,3 @@
-
 function Tile(x, y, o) {
 
   this.x = x;
@@ -7,20 +6,28 @@ function Tile(x, y, o) {
   this.occupied = o;
 }
 
+/**
+ * return whether a tile may move to another tile
+ */
 Tile.prototype.mayMove = function(x, y) {
 
-  if (!this.occupied)
+  if (!this.occupied) // empty tiles can't move
     return true;
 
   var dX = this.x + x; // destination X
   var dY = this.y + y; // destination Y
 
-  if (typeof grid[dX] == 'undefined' || typeof grid[dX][dY] == 'undefined')
-    return false;
+  if (typeof grid[dX] == 'undefined' ||
+		typeof grid[dX][dY] == 'undefined') // if the destination is out of bound
+    return false; // restrict movement
 
-  return (dX >= 0 && dX < WIDTH) && (dY >= 0 && dY < HEIGHT) && !grid[dX][dY].occupied;
+  return ((dX >= 0 && dX < WIDTH) && // double check destination is in bounds
+		(dY >= 0 && dY < HEIGHT) && !grid[dX][dY].occupied); // be sure destination is not already occupied
 };
 
+/**
+ * execute a movement
+ */
 Tile.prototype.move = function(x, y) {
 
   this.x += x;
