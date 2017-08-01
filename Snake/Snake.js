@@ -1,23 +1,23 @@
 
-var SCL = 20;
+const SCL = 20; // size of each tile
 var wOs, hOs; // width over SCL, height over SCL
 
-var snake = [];
+var snake;
 
-var dir;
-var score;
+var score; // "length"
 var food;
 
 function setup() {
 
   createCanvas(500, 500);
 
+	// initialize relative to SCL
   wOs = width / SCL;
   hOs = height / SCL;
 
-  snake.push(createVector(Math.floor(wOs / 2), Math.floor(hOs / 2)));
+	// push snake the middle
+	snake = new TileSnake(Math.floor(wOs / 2), Math.floor(hOs / 2));
 
-  dir = createVector(-1, 0);
   score = 0;
   food = newFood();
 
@@ -31,42 +31,31 @@ function draw() {
 
   background(51);
 
-  handleSnake();
+	/* handle snake */
+	if (snake.alive) {
 
-  paint();
+		if (snake.update(food)) { // snake at food
+
+			food = newFood();
+			score++;
+		}
+		snake.draw();
+	} else {
+
+		gameOver();
+	}
+
+	/* draw food */
+  fill(random(255), 0, random(255));
+  rect(food.x * SCL, food.y * SCL, SCL, SCL);
+
+  /* draw score */
+  text(score, SCL, height - SCL);
 }
 
-function handleSnake() {
-
-  snake.unshift(snake[0].copy().add(dir));
-
-  if (snake[0].x == food.x && snake[0].y == food.y) {
-    /* snake ate food */
-
-    food = newFood();
-    score++;
-  } else {
-
-    snake.splice(snake.length - 1, 1);
-  }
-
-  for (var i = 0; i < snake.length; i++) {
-    for (var j = 0; j < snake.length; j++) {
-      if (j != i && snake[j].equals(snake[i])) {
-        /* dead! */
-        gameOver();
-      }
-    }
-  }
-
-  if (snake[0].x > wOs || snake[0].x < 0 ||
-      snake[0].y > hOs ||  snake[0].y < 0) {
-    gameOver();
-  }
-
-
-}
-
+/**
+ * stops game, displays end game
+ */
 function gameOver() {
 
   noLoop();
@@ -76,45 +65,38 @@ function gameOver() {
   text("Press f5 to restart!", width / 2, height / 2 + 50);
 }
 
-function paint() {
-
-  /* draw snake */
-  fill(255);
-  for (var j = 0; j < snake.length; j++) {
-    rect(snake[j].x * SCL, snake[j].y * SCL, SCL, SCL);
-  }
-
-  /* draw food */
-  fill(random(255), 0, random(255));
-  rect(food.x * SCL, food.y * SCL, SCL, SCL);
-
-  /* draw score */
-  text(score, SCL, height - SCL);
-}
-
+/**
+ * returns food at a random position
+ */
 function newFood() {
 
-  return createVector(Math.floor(random(wOs)), Math.floor(random(hOs)));
+	var x = Math.floor(random(wOs));
+	var y = Math.floor(random(hOs));
+
+  return createVector(x, y);
 }
 
+/**
+ * handle user input
+ */
 function keyPressed() {
 
   switch (keyCode) {
 
     case UP_ARROW:
-      dir = createVector(0, -1);
+      snake.direct(createVector(0, -1));
       break;
 
     case DOWN_ARROW:
-      dir = createVector(0, 1);
+      snake.direct(createVector(0, 1));
       break;
 
     case RIGHT_ARROW:
-      dir = createVector(1, 0);
+      snake.direct(createVector(1, 0));
       break;
 
     case LEFT_ARROW:
-      dir = createVector(-1, 0);
+      snake.direct(createVector(-1, 0));
       break;
 
   }
