@@ -1,44 +1,57 @@
-function Bird(x, y, r) {
+function Bird(x, y, radius) {
 
   this.x = x;
   this.y = y;
 
-  this.r = r;
+  this.radius = radius;
 
-  this.yV = 0; // velocity
+  this.velocity = 0; // Y-velocity
 }
 
+/**
+ * handles velocity & position
+ */
 Bird.prototype.update = function() {
 
-  this.yV += GRAVITY;
+  this.velocity += GRAVITY;
 
-  this.y += this.yV;
+  this.y += this.velocity;
 };
 
+/**
+ * changes velocity based upon f
+ */
 Bird.prototype.hop = function(f) {
 
-  this.yV = 0;
-  this.yV += f;
+  this.velocity = 0;
+  this.velocity += f;
 };
 
+/**
+ * returns whether this bird collides with pipe
+ */
 Bird.prototype.collidesWith = function(pipe) {
 
-  if (pipe.x - this.x <= this.r && pipe.x - this.x >= -this.r) {
+  if (pipe.x - this.x <= this.radius &&
+		pipe.x - this.x >= -this.radius) { // if player is within X-range of pipe
 
-    var uH = pipe.hole - pipe.w / 2;
-    var lH = pipe.hole + pipe.w / 2;
+    var upperHole = pipe.hole - pipe.w / 2;
+    var lowerHole = pipe.hole + pipe.w / 2;
 
-    return (this.y - this.r < uH || this.y + this.r > lH);
+    return (this.y - this.radius < upperHole || this.y + this.radius > lowerHole);
   }
 
   return false;
 
 };
 
+/**
+ * draws bird
+ */
 Bird.prototype.draw = function() {
 
   stroke(40);
   strokeWeight(3);
   fill(255);
-  ellipse(this.x, this.y, this.r * 2);
+  ellipse(this.x, this.y, this.radius * 2);
 };
