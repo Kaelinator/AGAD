@@ -1,21 +1,34 @@
 
-var WIDTH = 100;
-var HEIGHT = 150;
+/** dimensions of tiles */
+const WIDTH = 100;
+const HEIGHT = 150;
 
-var time;
-var score;
-var playing;
-var won;
-var tiles = [];
+const WINNING_SCORE = 30;
+
+var time; // countdown
+var score; // number of tiles clicked correctly
+
+var playing; // determine state
+var won; // whether the WINNING_SCORE was reached or not
+
+/*
+ *  -1 = red
+ *   0 = black
+ *   1 = white
+ */
+var tiles = []; // holds field
 
 function setup() {
-  createCanvas(401, 601); // keep borders
+  createCanvas(401, 601); // keep borders (1 pixel padding)
 
-  time = -3;
+  time = -3; // countdown begins at three
   score = 0;
 
-  for (var i = 0; i < 4; i++)
-    newRow();
+	/* initializing first rows */
+  for (var i = 0; i < 4; i++) {
+
+		newRow();
+	}
 
   playing = false;
   won = false;
@@ -26,7 +39,17 @@ function setup() {
 function draw() {
   background(51);
 
-  for (var i = 0; i < tiles.length; i++) {
+  drawTiles();
+
+  handleState();
+}
+
+/**
+ * draws all tiles
+ */
+function drawTiles() {
+
+	for (var i = 0; i < tiles.length; i++) {
 
     var x = (i % 4) * WIDTH;
     var y = (Math.floor(i / 4) * HEIGHT);
@@ -39,52 +62,27 @@ function draw() {
     fill((tiles[i] !== 0) ? ((tiles[i] === 1) ? "#FFFFFF" : "#FF0000") : "#000000");
     rect(x, y, WIDTH, HEIGHT);
   }
-
-  handleState();
-
 }
 
-function getTime() {
-  return Math.floor(time / 60) + "." + Math.floor(map(time % 60, 0, 59, 0, 999)) + "\"";
-}
-
+/**
+ * draws correct screens depending on the state of the game
+ */
 function handleState() {
 
-  if (!playing) {
+  if (!playing) { // if we are not playing
 
-    if (time > 0) {
+    if (time > 0) { // if we are not in the countdown
       /* endGame */
 
-      if (won) {
+      drawEnd(won);
+    } else { // pre-game
 
-        background("#66EE66");
-
-        fill("#FFFFFF");
-        textSize(60);
-        text("Complete!", width / 2, height / 2 - 80);
-
-        fill("#000000");
-        textSize(70);
-        text(getTime(), width / 2, height / 2);
-
-        fill("#FFFFFF");
-        textSize(40);
-        text("Press f5 to restart!", width / 2, height / 2 + 50);
-
-      } else {
-
-        fill("#FF00FF");
-        textSize(60);
-        text("Game Over!", width / 2, height / 2);
-        textSize(40);
-        text("Press f5 to restart!", width / 2, height / 2 + 50);
-      }
-    } else {
-
-      /* countdown */
+      /* draw countdown */
       textSize(60);
       fill("#FF0000");
       text(-time, width / 2, height / 2);
+
+			/* count down countdown */
       if (frameCount % 60 === 0) {
 
         time++;
@@ -93,7 +91,7 @@ function handleState() {
         }
       }
     }
-  } else {
+  } else { // still playing
 
     /* draw time */
     textSize(90);
@@ -103,21 +101,57 @@ function handleState() {
   }
 }
 
+/**
+ * based upon won, this will draw a "complete" message, or a "you lose" message
+ */
+function drawEnd(won) {
+
+	if (won) {
+
+		background("#66EE66");
+
+		fill("#FFFFFF");
+		textSize(60);
+		text("Complete!", width / 2, height / 2 - 80);
+
+		fill("#000000");
+		textSize(70);
+		text(getTime(), width / 2, height / 2);
+
+		fill("#FFFFFF");
+		textSize(40);
+		text("Press f5 to restart!", width / 2, height / 2 + 50);
+
+	} else {
+
+		fill("#FF00FF");
+		textSize(60);
+		text("Game Over!", width / 2, height / 2);
+		textSize(40);
+		text("Press f5 to restart!", width / 2, height / 2 + 50);
+	}
+}
+
+/**
+ * handling user input
+ */
 function mousePressed() {
 
-  if (!playing)
+  if (!playing) // don't allow input if the player isn't playing
     return;
 
   if (mouseY >= 3 * HEIGHT && mouseY <= 4 * HEIGHT) {
-    var t = getClickedTile(mouseX, mouseY);
+		// check if click is within canvas bounds
 
-    if (t == -1)
+    var tile = getClickedTile(mouseX, mouseY);
+
+    if (tile == -1) // they clicked out of bounds
       return;
 
-    if (tiles[t] !== 0) {
+    if (tiles[tile] !== 0) {
       /* end game */
 
-      tiles[t] = -1;
+      tiles[tile] = -1;
 
       won = false;
       playing = false;
@@ -125,35 +159,53 @@ function mousePressed() {
       score++;
       newRow();
 
-      console.log(score);
-      if (score >= 30) {
+      if (score >= WINNING_SCORE) {
         /* end game */
 
         won = true;
         playing = false;
-        console.log("flag");
       }
     }
   }
 
 }
 
+/**
+ * returns index of clicked tile
+ * only returns bottom row tiles
+ */
 function getClickedTile(mX) {
 
   for (var i = 0; i < 4; i++) {
-    if (mX >= i * WIDTH && mX <= (i + 1) * WIDTH) {
-      return i + 12;
+
+		var lowerBound = i * WIDTH;
+		var upperBound = (i + 1) * WIDTH;
+    if (mX >= lowerBound && mX <= upperBound) {
+      return i + 12; // only return for bottom row, which is 3 rows of 4 deep in the array
     }
   }
 
-  return -1;
+  return -1; // click was out of bounds
 }
 
+/**
+ * push a new row
+ */
 function newRow() {
 
-  var t = Math.floor(random(4));
+  var column = Math.floor(random(4));
 
-  for (var i = 0; i < 4; i++)
-    tiles.unshift((t === i) ? 0 : 1); // push tiles to the front
+  for (var i = 0; i < 4; i++) {
 
+		tiles.unshift((column === i) ? 0 : 1); // push tiles to the front, A.K.A. top
+	}
+
+}
+
+/**
+ * returns formatted time, e.g.: "12.345\""
+ */
+function getTime() {
+
+  return Math.floor(time / 60) + "." + Math.floor(map(time % 60, 0, 59, 0, 999)) + "\"";
 }
