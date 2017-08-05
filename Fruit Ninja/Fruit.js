@@ -1,92 +1,106 @@
-function Fruit(x, y, s, c, speed, b) {
+function Fruit(x, y, size, color, bad) {
 
-  this.x = x;
-  this.y = y;
+	this.position = createVector(x, y);
 
-  this.c = c; // color
-  this.clearC = clearColor(c); // color with no alpha
+  this.color = color; // original color
 
-  this.b = b; // bad fruit
+  this.bad = bad; // bad fruit
 
-  this.s = s; // size
-  this.speed = speed;
+  this.size = size; // size
 
-  this.xV = randomXV(x);
-  this.yV = -6.5; // random(-5, -10);
+	this.velocity = createVector(randomXVelocity(x), random(-7, -11));
 
   this.sliced = false;
+	this.slicedTime = 0; // keep track of fade
+
   this.visible = true;
 }
 
+/**
+ * handles position, velocity, visibility, and slice time
+ */
 Fruit.prototype.update = function() {
 
-  this.x += this.xV;
-  this.y += this.yV;
+  this.position.add(this.velocity);
 
-  // this.xV *= 0.95;
-  this.yV += GRAVITY;
+  this.velocity.x *= 0.99; // air resistance
+  this.velocity.y += GRAVITY; // gravity
 
-  if (this.y > height) {
-    this.visible = false;
-  }
+	this.visible = (this.position.y < height); // update visibility
+
+	if (this.sliced) {
+
+		this.slicedTime++; // update sliced time
+	}
 };
 
+/**
+ * draws fruit, handles fading
+ */
 Fruit.prototype.draw = function() {
 
+	var fillColor = this.color;
   if (this.sliced) {
 
-    if (this.b) {
+    if (this.bad) {
       /* game over */
       endGame();
     }
 
-    this.c = lerpColor(this.c, color(51), 0.1);
+		var interp = constrain(this.slicedTime, 0, 15) / 15; // how much to interpolate
+
+		// lerp to background color
+    fillColor = lerpColor(this.color, color(51), interp);
   }
 
-  if (this.b) {
+	/* determine stroke based upon bad */
+  if (this.bad) {
+
     stroke(0);
     strokeWeight(5);
   } else {
+
     noStroke();
   }
 
-  fill(this.c);
-
-  ellipse(this.x, this.y, this.s);
+	/* draw */
+  fill(fillColor);
+  ellipse(this.position.x, this.position.y, this.size);
 };
 
+/**
+ * returns a random fruit
+ */
 function randomFruit() {
 
+	/* randomize position */
   var x = random(width);
   var y = height;
-  var size = noise(frameCount) * 20 + 20;
 
-  var bad = (random() > 1);
+  var size = noise(frameCount) * 20 + 20; // random size
 
+  var bad = (random() > BAD_FRUIT_PROBABILITY); // good or bad
+
+	/* base color upon bad */
   var r = (bad) ? 225 : 0;
   var g = (bad) ? 0 : noise(frameCount * 2) * 255;
   var b = (bad) ? 0 : noise(frameCount * 3) * 255;
 
-  var col = color(r, g, b);
-  var speed = random(3, 5);
+  var col = color(r, g, b); // color
 
-  return new Fruit(x, y, size, col, speed, bad);
+  return new Fruit(x, y, size, col, bad); // return fruit
 }
 
-function clearColor(c) {
-
-  var r = red(c);
-  var g = green(c);
-  var b = blue(c);
-
-  return color(r, g, b, 0);
-}
-
-function randomXV(x) {
+/**
+ * returns velocity to always point toward center
+ */
+function randomXVelocity(x) {
 
   if (x > width / 2) {
+
     return random(-1.5, -0.5);
   } else {
+
     return random(0.5, 1.5);
   }
 }
