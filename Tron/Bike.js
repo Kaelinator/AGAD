@@ -1,17 +1,20 @@
-function Bike(x, y, xV, yV, c) {
+function Bike(x, y, xVelocity, yVelocity, color) {
+
+	this.location = createVector(x, y);
+	this.velocity = createVector(xVelocity, yVelocity);
 
   this.trail = [];
 
-  this.c = c;
-
-  this.loc = createVector(x, y);
-  this.vel = createVector(xV, yV);
+  this.color = color;
 }
 
+/**
+ * draws the trail
+ */
 Bike.prototype.draw = function() {
 
   noStroke();
-  fill(this.c);
+  fill(this.color);
 
   for (var i = 0; i < this.trail.length; i++) {
 
@@ -19,29 +22,48 @@ Bike.prototype.draw = function() {
   }
 };
 
+/**
+ * adds velocity to location and updates trail
+ */
 Bike.prototype.update = function() {
 
-  this.trail.push(createVector(this.loc.x, this.loc.y));
-  this.loc.add(this.vel);
+  this.trail.push(createVector(this.location.x, this.location.y));
+  this.location.add(this.velocity);
 };
 
+/**
+ * ensures a safe direction
+ */
+Bike.prototype.setVelocity = function(velocity) {
+
+	if (Math.abs(velocity.y - this.velocity.y) > 1 ||
+ 		Math.abs(velocity.x - this.velocity.x) > 1) // if new velocity opposes old velocity
+		return;
+
+	this.velocity = velocity;
+};
+
+/**
+ * checks for a collision between the bike and passed trail
+ */
 Bike.prototype.collidesWith = function(trail) {
 
   for (var i = 0; i < trail.length; i++) {
 
-    var d = dist(trail[i].x, trail[i].y, this.loc.x, this.loc.y);
-    if (d < 1)
-      return true;
+		if (trail[i].x === this.location.x && trail[i].y === this.location.y) {
+
+			return true;
+		}
   }
 
   return false;
 };
 
+/**
+ * checks if the bike exceeds constraints
+ */
 Bike.prototype.collidesWithBounds = function() {
-  if (this.loc.x < 0 || this.loc.x > width / SCL ||
-  this.loc.y < 0 || this.loc.y > height) {
-    return true;
-  }
 
-  return false;
+  return (this.location.x < 0 || this.location.x > (width / SCL) ||
+  	this.location.y < 0 || this.location.y > height);
 };
