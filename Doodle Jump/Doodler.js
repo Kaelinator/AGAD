@@ -1,66 +1,89 @@
-function Doodler(x, a, enemy, s, c) {
+function Doodler(x, altitude, enemy, size, color) {
 
-  this.loc = createVector(x, a);
-  this.vel = createVector(0, 0);
+  this.location = createVector(x, altitude);
+  this.velocity = createVector(0, 0);
 
-  this.maxA = a;  // max altitude
-  this.preMaxA = a; // previous max altitude
+  this.maxAltitude = altitude;  // max altitude
+  this.premaxAltitude = altitude; // previous max altitude
 
   this.force = 12;
 
-  this.c = c; // color
-  this.s = s; // size
+  this.color = color;
+  this.size = size;
 
-  this.enemy = enemy;
+  this.enemy = enemy; // enemy or not
+
+	this.drone = 0; // enemy Doodlers drone across the screen
 
   this.onScreen = true;
 }
 
+/**
+ * changes location based upon velocity
+ * moves enemy Doodlers across the screen
+ */
 Doodler.prototype.update = function() {
 
   if (this.enemy) {
+		// drone across the screen
 
-    // this.loc.x += this.speed;
-    // this.loc.x %= width;
-    console.log("flag");
+		this.drone += map(this.maxAltitude, 0, 15000, 0.0001, 0.1);
+    this.location.x = (Math.sin(this.drone) * (width / 2)) + width / 2;
   } else {
+		/* change locationation based upon velocityocationity and add air resistance */
+    this.location.add(this.velocity);
+    this.velocity.x *= 0.8;
 
-    this.loc.add(this.vel);
-    this.vel.x *= 0.8;
+		// apply GRAVITY
+	  player.applyForce(createVector(0, GRAVITY));
 
-    this.maxA = (this.loc.y > this.maxA) ? this.loc.y : this.maxA;
+		// update maximum altitude
+    this.maxAltitude = (this.location.y > this.maxAltitude) ? this.location.y : this.maxAltitude;
   }
 
 };
 
+/**
+ * sets velocityocationity to mimic a hop
+ */
 Doodler.prototype.jump = function() {
 
-  this.vel.y *= 0;
+  this.velocity.y *= 0;
 
-  if (this.preMaxA == this.maxA) {
+  if (this.premaxAltitude == this.maxAltitude) {
+		// stronger hop as the altitude remains constant
 
     this.force = constrain(this.force + 1, 12, 16);
   } else {
+
     this.force = 12;
   }
 
   this.applyForce(createVector(0, this.force));
 
-  this.preMaxA = this.maxA;
+  this.premaxAltitude = this.maxAltitude;
 };
 
+/**
+ * adds force to the velocityocationity
+ */
 Doodler.prototype.applyForce = function(force) {
 
-  this.vel.add(force);
+  this.velocity.add(force);
 };
 
+/**
+ * returns whether or not the doodler collides with another doodler
+ */
 Doodler.prototype.collidesWith = function(doodler) {
 
-  var d = dist(doodler.loc.x, doodler.loc.y, this.loc.x, this.loc.y);
+  var distance = dist(doodler.location.x, doodler.location.y, this.location.x, this.location.y);
 
-  if (d < (this.s / 2 + doodler.s / 2)) {
+  if (distance < (this.size / 2 + doodler.size / 2)) {
+		// distance is greater than radii combined
 
-    if (doodler.loc.y < this.loc.y) {
+    if (doodler.location.y < this.location.y) {
+			// underneath doodler
 
       endGame();
       return false;
@@ -70,23 +93,29 @@ Doodler.prototype.collidesWith = function(doodler) {
   }
 };
 
+/**
+ * draws the doodler with specific altitiude translation
+ */
 Doodler.prototype.draw = function(altitude) {
 
   stroke(255);
   strokeWeight(3);
-  fill(this.c);
+  fill(this.color);
 
   if (this.enemy) {
+		// draw relative to platforms
 
-    if (altitude - this.loc.y < height) {
+    if (altitude - this.location.y < height) {
+			// if it is on-screen
 
-      ellipse(this.loc.x, altitude - this.loc.y + height / 2, this.s);
+      ellipse(this.location.x, altitude - this.location.y + height / 2, this.size);
     } else {
       this.onScreen = false;
     }
   } else {
+		// draw regularly
 
-    ellipse(this.loc.x, height / 2, this.s);
+    ellipse(this.location.x, height / 2, this.size);
   }
 
 };

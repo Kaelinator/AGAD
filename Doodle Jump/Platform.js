@@ -1,45 +1,56 @@
-function Platform(x, a, w, c) {
+function Platform(x, altitude, size, color) {
 
   this.x = x;
-  this.a = a; // altitude
+  this.altitude = altitude;
 
-  this.w = w; // width
-  this.c = c; // color
+  this.size = size;
+  this.color = color;
 
   this.onScreen = true;
 }
 
+/**
+ * draws platform at altitude
+ */
 Platform.prototype.draw = function(altitude) {
 
   stroke(255);
   strokeWeight(3);
-  fill(this.c);
+  fill(this.color);
 
-  if (altitude - this.a < height / 2) {
+	// relative to player
+  if (altitude - this.altitude < height / 2) {
+		// on-screen
 
-    rect(this.x, (altitude - this.a + height / 2) , this.w, 15);
+    rect(this.x, (altitude - this.altitude + height / 2) , this.size, 15);
   } else {
     this.onScreen = false;
   }
 };
 
+/**
+ * returns whether passed Doodler hits the platform
+ */
 Platform.prototype.collidesWith = function(doodler) {
 
-  var pT = this.a; // platform top
-  var dB = doodler.loc.y - doodler.s / 2 ; // doodler bottom
+  var platformTop = this.altitude;
+  var doodlerBottom = doodler.location.y - doodler.size / 2 ;
 
   stroke("#FF0000");
   strokeWeight(10);
-  if (Math.abs(pT - dB) < -doodler.vel.y && pT < dB) {
 
-    var pLX = this.x; // platform lefter-most x bound
-    var pRX = this.x + this.w; // platform righter-most x bound
+  if (Math.abs(platformTop - doodlerBottom) < -doodler.velocity.y && platformTop < doodlerBottom) {
 
-    var dLX = doodler.loc.x - doodler.s / 2; // doodler lefter-most x bound
-    var dRX = doodler.loc.x + doodler.s / 2; // doodler righter-most x bound
+    var platformLeftX = this.x; // platform lefter-most x bound
+    var platformRightX = this.x + this.size; // platform righter-most x bound
 
-    if ((dLX >= pLX && dLX <= pRX) || (dRX >= pLX && dRX <= pRX))
-      return true;
+    var doodlerLeftX = doodler.location.x - doodler.size / 2; // doodler lefter-most x bound
+    var doodlerRightX = doodler.location.x + doodler.size / 2; // doodler righter-most x bound
+
+    return ((doodlerLeftX >= platformLeftX && // if the doodler's left X falls between the platform
+			doodlerLeftX <= platformRightX) ||
+			(doodlerRightX >= platformLeftX && // if the doodler's right X falls between the platform
+			doodlerRightX <= platformRightX));
   }
 
   return false;
