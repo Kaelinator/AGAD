@@ -1,15 +1,15 @@
 
-var words = [ "game", "day", "java", "script", "rainbow", "program", "p5", "bunny", "youtube", "github" ];
+const WORDS = [ "game", "day", "java", "script", "rainbow", "program", "p5", "bunny", "youtube", "github" ];
 
-var focus;
+var focus; // Astroid the player is currently typing out
 var field = [];
 
 var score = 0;
 
-var planetCrust;
-var planetMantle;
+var planetCrust; // color of crust
+var planetMantle; // color of mantle
 
-var ship;
+var ship; // color of ship
 
 function setup() {
 
@@ -19,7 +19,7 @@ function setup() {
   planetMantle = randomColor();
   ship = randomColor();
 
-  field.push(new Asteroid(random(width - 150) + 75, 0, random(words), randomColor()));
+  field.push(new Asteroid(random(width - 150) + 75, 0, random(WORDS), randomColor()));
 
   focus = null;
 }
@@ -30,14 +30,30 @@ function draw() {
 
   drawBase();
   drawLazer();
+	drawScore();
 
-  for (var i = field.length - 1; i >= 0; i--) {
+  handleField();
+}
+
+/**
+ * updates & draws Astroids
+ * manages field array
+ * increments score
+ * manages focus
+ * creates Asteroids
+ */
+function handleField() {
+
+	for (var i = field.length - 1; i >= 0; i--) {
 
     field[i].update();
 
-    if (field[i].intact)
-      field[i].draw();
-    else {
+    if (field[i].intact) {
+			// astroid is still on-screen
+
+			field[i].draw();
+		} else {
+			// Astroid has been destroyed
 
       score += field[i].text.length;
       field.splice(i, 1); // delete from array
@@ -45,30 +61,40 @@ function draw() {
     }
   }
 
-  if (frameCount % 60 === 0)
-    if (noise(frameCount) > map(score, 0, 1000, 0.9, 0.01))
-      field.push(new Asteroid(random(width - 150) + 75, 0, random(words), randomColor()));
+	/* attempt new Astroid */
+  if (frameCount % 60 === 0) { // every second
 
-  /* draw score */
-  textAlign(RIGHT);
-  noStroke();
-  textSize(30);
-  fill(255);
-  text(score, 50, height / 2);
+		if (random() > map(score, 0, 1000, 0.8, 0.01)) { // more difficult as game progresses
+
+			field.push(new Asteroid(random(width - 150) + 75, 0, random(WORDS), randomColor()));
+		}
+	}
 }
 
+/**
+ * handles user input
+ */
 function keyPressed() {
 
   if (focus) {
+		// if we have honed in on a specific Asteroid
+
     focus.erode(keyCode);
   } else {
+		// find the astroid to target
+
     focus = findAsteroid(keyCode, field);
+
     if (focus) {
       focus.erode(keyCode);
     }
   }
 }
 
+/**
+ * draws planet as a rectangle
+ * draws "ground control" as a triangle
+ */
 function drawBase() {
 
   /* planet */
@@ -87,15 +113,19 @@ function drawBase() {
   endShape(CLOSE);
 }
 
+/**
+ * draws "lazer" between ground control and Asteroid
+ */
 function drawLazer() {
 
   if (!focus)
     return;
 
   stroke(randomColor());
-  strokeWeight(focus.completedText.length);
+  strokeWeight(focus.completedText.length); // width of line depends on progress
 
-  line(width / 2, height - 50, focus.pos.x, focus.pos.y);
+	// point of ground control
+  line(width / 2, height - 50, focus.position.x, focus.position.y);
 
   fill(255);
   noStroke();
@@ -104,12 +134,36 @@ function drawLazer() {
   text(focus.completedText, 10, height - 40);
 }
 
+/**
+ * draws the score
+ */
+function drawScore() {
+
+  textAlign(RIGHT);
+  noStroke();
+  textSize(30);
+  fill(255);
+  text(score, 50, height / 2);
+}
+
+/**
+ * Generates a random color
+ */
 function randomColor() {
 
   return color(random(255), random(255), random(255));
 }
 
+/**
+ * stops loop, draws game over message
+ */
 function endGame() {
+
   noLoop();
-  console.log("Game Over!");
+
+	fill(255);
+  noStroke();
+  textAlign(CENTER);
+  textSize(80);
+	text("Game Over!", width / 2, height / 2);
 }

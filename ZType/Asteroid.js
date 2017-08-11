@@ -1,57 +1,74 @@
-function Asteroid(x, y, text, c) {
+function Asteroid(x, y, text, color) {
 
-  this.pos = createVector(x, y);
+  this.position = createVector(x, y);
 
-  this.c = c; // color
+  this.color = color; // color
 
-  this.text = text;
-  this.s = text.length * 10; // size
+  this.text = text; // text do be typed
+  this.size = text.length * 15; // size
 
-  this.completedText = "";
+  this.completedText = ""; // text which the user has correctly inputted
 
-  this.intact = true;
+  this.intact = true; // whether the astroid is on-screen or not
 }
 
+/**
+ * moves Astroid down the screen
+ */
 Asteroid.prototype.update = function() {
 
-  if (this.pos.y++ > height) {
+	// make speed based upon score
+	this.position.y += map(score, 0, 1000, 1, 15);
+
+  if (this.position.y > height) {
     endGame();
   }
 };
 
-Asteroid.prototype.erode = function(code) {
+/**
+ * based upon keyCode, will add to the completedText
+ */
+Asteroid.prototype.erode = function(keyCode) {
 
-  var char = String.fromCharCode(code).toLowerCase();
-  var l = this.completedText.length + 1;
+  var inputChar = String.fromCharCode(keyCode).toLowerCase(); // keyCode to char
+  var length = this.completedText.length + 1;
 
-  if (this.text.substring(0, l) === this.completedText + char)
-    this.completedText += char;
+  if (this.text.substring(0, length) === this.completedText + inputChar) // if the character matches text
+    this.completedText += inputChar;
 
-  this.intact = (this.completedText !== this.text);
+  this.intact = (this.completedText !== this.text); // update intact
 };
 
+/**
+ * draws Astroid
+ */
 Asteroid.prototype.draw = function() {
 
-  fill(this.c);
+  fill(this.color);
 
   stroke(0);
   strokeWeight(3);
-  ellipse(this.pos.x, this.pos.y, this.s);
+  ellipse(this.position.x, this.position.y, this.size);
 
   noStroke();
   textAlign(CENTER);
   textSize(20);
   fill(255);
-  text(this.text, this.pos.x, this.pos.y);
+  text(this.text, this.position.x, this.position.y);
 };
 
-function findAsteroid(code, arr) {
+/**
+ * figures out which Astroid within the field array
+ * should be targeted
+ */
+function findAsteroid(code, field) {
 
   var char = String.fromCharCode(code).toLowerCase();
 
-  for (var i = 0; i < arr.length; i++) {
-    if (arr[i].text.startsWith(char)) {
-      return arr[i];
+  for (var i = 0; i < field.length; i++) {
+    if (field[i].text.startsWith(char)) {
+
+      return field[i];
     }
   }
 
