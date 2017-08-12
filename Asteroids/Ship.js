@@ -1,46 +1,58 @@
-function Ship(bC, pC) {
+function Ship(fillColor, strokeColor) {
 
-  this.a = 0; // angle
-  this.aV = 0; // angle velocity
+  this.angle = 0; // theta
+  this.angleVelocity = 0; // theta velocity
 
-  this.bC = bC; // body color
-  this.pC = pC; // perimeter color
-
+  this.fillColor = fillColor; // body color
+  this.strokeColor = strokeColor; // perimeter color
 }
 
+/**
+ * changes angle by angleVelocity
+ */
 Ship.prototype.update = function() {
 
-  this.a += this.aV;
-  this.aV *= 0.7;
+  this.angle += this.angleVelocity;
+  this.angleVelocity *= 0.7;
 };
 
-Ship.prototype.shoot = function(arr) {
+/**
+ * shoots a lazer
+ * pushes it to bullets array
+ */
+Ship.prototype.shoot = function(bullets) {
 
-  arr.push(new Lazer(-this.a + PI, 0, 5));
+  bullets.push(new Lazer(-this.angle + PI, 0, 5));
 };
 
-Ship.prototype.rot = function(a) {
+/**
+ * changes the angleVelocity based upon acceleration
+ */
+Ship.prototype.rotate = function(acceleration) {
 
-  this.aV += a;
+  this.angleVelocity += acceleration;
 };
 
+/**
+ * draws the ship
+ */
 Ship.prototype.draw = function() {
 
-  fill(this.bC);
+  fill(this.fillColor);
   strokeWeight(2);
-  stroke(this.pC);
+  stroke(this.strokeColor);
 
-  push();
+  push(); // save translations & rotations
 
-  translate(width / 2, height / 2);
-  rotate(this.a);
+  translate(width / 2, height / 2); // draw relative to the center
+  rotate(this.angle); // draw relative to the angle of the ship
 
+	/* draw triangle */
   beginShape();
   vertex(0, -30);
   vertex(15, 15);
   vertex(-15, 15);
   endShape(CLOSE);
 
-  pop();
-
+  pop(); // revert translations & rotations
 };

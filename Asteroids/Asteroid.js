@@ -1,32 +1,40 @@
-function Asteroid(x, y, s, c) {
+function Asteroid(x, y, size, color) {
 
-  this.pos = createVector(x, y);
+  this.position = createVector(x, y);
 
-  this.s = s; // size
-  this.c = c; // color
-
+  this.size = size; // radius
+  this.color = color;
 }
 
-Asteroid.prototype.update = function () {
+/**
+ * directs asteroid toward ship
+ * checks collision with ship
+ */
+Asteroid.prototype.update = function() {
 
-  var path = createVector(width / 2, height / 2).sub(this.pos);
-  // var path = this.pos.sub(0, 0);
-  path.setMag(5 - log(this.s));
+  var path = createVector(width / 2, height / 2).sub(this.position); // figure out path
+  path.setMag(5 - log(this.size)); // change magnitude based upon size of asteroid
 
-  this.pos.add(path);
+  this.position.add(path); // change position based upon path
 
-  var d = dist(this.pos.x, this.pos.y, width / 2, height / 2);
+	/* check collision with ship */
+  var d = dist(this.position.x, this.position.y, width / 2, height / 2);
 
-  if (d < this.s / 2) {
+  if (d < this.size / 2) {
+		// distance is greater than the raidus
+
     endGame();
   }
 };
 
-Asteroid.prototype.draw = function () {
+/**
+ * draws asteroid
+ */
+Asteroid.prototype.draw = function() {
 
   fill(51);
-  stroke(this.c);
+  stroke(this.color);
   strokeWeight(5);
 
-  ellipse(this.pos.x, this.pos.y, this.s);
+  ellipse(this.position.x, this.position.y, this.size);
 };
