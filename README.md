@@ -3,8 +3,11 @@
 ### Demos
 
 1. [Ant Smasher](https://kaelinator.github.io/AGAD/Ant%20Smasher)
+    ![ant-smasher](https://user-images.githubusercontent.com/397632/29246279-a8fce6ea-7fb1-11e7-9790-aa1ba63e37ed.gif)
 1. [Asteroids](https://kaelinator.github.io/AGAD/Asteroids)
+    ![asteroids](https://user-images.githubusercontent.com/397632/29246283-ac7fa9a6-7fb1-11e7-8992-090faa6d3bb2.gif)
 1. [Block Rain](https://kaelinator.github.io/AGAD/Block%20Rain)
+    ![block-rain](https://user-images.githubusercontent.com/397632/29246284-af8fdde6-7fb1-11e7-8397-60fdec940c5a.gif)
 1. [Breakout](https://kaelinator.github.io/AGAD/Breakout)
 1. [Catcher](https://kaelinator.github.io/AGAD/Catcher)
 1. [Dodge](https://kaelinator.github.io/AGAD/Dodge)
