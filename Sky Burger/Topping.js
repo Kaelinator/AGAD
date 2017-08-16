@@ -1,47 +1,63 @@
+function Topping(x, y, w, color) {
 
-function Topping(x, y, c) {
+  this.position = createVector(x, y); // position
 
-  this.pos = createVector(x, y); // position
+  this.color = color;
 
-  this.c = c; // color
+	/* dimensions */
+  this.width = w;
+  this.height = 25;
 
-  this.w = 100;
-  this.h = 25;
-
-  this.stacked = false;
+  this.stacked = false; // whether or not the Topping is falling
 }
 
+/**
+ * draws the Toppings
+ */
 Topping.prototype.draw = function() {
 
-  fill(this.c);
+  fill(this.color);
   noStroke();
-  ellipse(this.pos.x, this.pos.y, this.w, this.h);
-
+  ellipse(this.position.x, this.position.y, this.width, this.height);
 };
 
+/**
+ * adds gravity
+ */
 Topping.prototype.update = function() {
 
   if (!this.stacked) {
-    this.pos.y += 5;
+    this.position.y += 5;
   }
 };
 
+/**
+ * returns whether or not the Topping stacks upon the top Topping
+ */
 Topping.prototype.stacksWith = function(top) {
 
-  if (Math.abs(this.pos.y - top.pos.y) < this.h / 2) {
+  if (Math.abs(this.position.y - top.position.y) < this.height / 2) {
+		// if y values match
 
-    return (Math.abs(this.pos.x - top.pos.x) < this.w / 2)
+		// return whether the Topping's center falls within the Topping's bounds
+    return (Math.abs(this.position.x - top.position.x) < this.width / 2)
   }
 
   return false;
 };
 
-Topping.prototype.moveTo = function(to) {
+/**
+ * moves the Topping directly to destination vector
+ */
+Topping.prototype.moveTo = function(destination) {
 
-  this.pos = createVector(to.x, this.pos.y);
+  this.position = createVector(destination.x, this.position.y);
 };
 
-Topping.prototype.move = function(m) {
+/**
+ * moves the topping relatively to movement vector
+ */
+Topping.prototype.move = function(movement) {
 
-  this.pos.add(m);
+  this.position.add(movement);
 };
