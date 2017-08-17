@@ -1,65 +1,93 @@
-function Square(x, y, d, c, player) {
+function Square(x, y, size, color, player, speed) {
 
-  this.pos = createVector(x, y);
+  this.position = createVector(x, y);
 
-  this.vel = setVelocity(this.pos, player);
+	this.speed = speed;
 
-  this.p = player;
+  this.velocity = this.setVelocity(this.position, player);
 
-  this.d = d; // dimensions
-  this.c = c; // color
+  this.size = size; // dimensions
+  this.color = color;
 }
 
-Square.prototype.update = function() {
+/**
+ * changes position based upon velocity
+ * adds friction if specific is true
+ */
+Square.prototype.update = function(specific) {
 
-  this.pos.add(this.vel);
+  this.position.add(this.velocity);
 
-  if (!this.p) {
+  if (specific) {
+		// only the player gets friction
 
-    this.vel.x *= 0.5;
-    this.vel.y *= 0.5;
+    this.velocity.x *= 0.5;
+    this.velocity.y *= 0.5;
   }
-
 };
 
+/**
+ * draws the Square to the screen
+ */
 Square.prototype.draw = function() {
 
-  fill(this.c);
+  fill(this.color);
   stroke(255);
   strokeWeight(3);
 
-  rect(this.pos.x, this.pos.y, this.d, this.d);
+  rect(this.position.x, this.position.y, this.size, this.size);
 };
 
+/**
+ * updates whether the Square is offscreen or not
+ */
 Square.prototype.isOffscreen = function() {
 
-  return (this.pos.x < 0 || this.pos.x > width ||
-      this.pos.y < 0 || this.pos.y > height);
+  return (this.position.x < 0 || this.position.x + this.size > width ||
+      this.position.y < 0 || this.position.y + this.size > height);
 }
 
-Square.prototype.collidesWith = function(s) {
+/**
+ * returns whether this square collides with passed Square
+ */
+Square.prototype.collidesWith = function(square) {
 
-  var tX = this.pos.x + this.d / 2;
-  var tY = this.pos.y + this.d / 2;
+	/* calculate this Square's location */
+  var cX = this.position.x + this.size / 2;
+  var cY = this.position.y + this.size / 2;
+	var center = createVector(cX, cY); // this Square's center point
 
-  return !(tX < s.pos.x || tX > s.pos.x + s.d ||
-      tY < s.pos.y || tY > s.pos.y + s.d);
+	/* calculate passed Square's location */
+	var rX = square.position.x + square.size;
+	var rY = square.position.y + square.size;
+	var rightBound = createVector(rX, rY); // right-most bound of passed Square
+
+  return !(center.x < square.position.x || center.x > rightBound.x ||
+      center.y < square.position.y || center.y > rightBound.y);
 };
 
-Square.prototype.move = function(v) {
+/**
+ * adds passed acceleration to velocity
+ */
+Square.prototype.move = function(xAcceleration, yAcceleration) {
 
-  this.vel.add(v);
+  this.velocity.add(createVector(xAcceleration, yAcceleration));
 };
 
-function setVelocity(s, p) {
+/**
+ * returns a vector pointing from vel1 to vel2
+ */
+Square.prototype.setVelocity = function(vel1, vel2) {
 
-  if (p) {
+	if (vel1 != null && vel2 != null) {
+		// both vectors exist
 
-    var vel = createVector(p.x - s.x, p.y - s.y);
-    vel.setMag(speed);
+		// point vel1 toward vel2
+		var velocity = createVector(vel2.x - vel1.x, vel2.y - vel1.y);
+		velocity.setMag(this.speed); // limit the speed
 
-    return vel;
-  }
+		return velocity;
+	}
 
-  return createVector(0, 0);
+	return createVector(1, 0);
 }
