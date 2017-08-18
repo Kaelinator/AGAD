@@ -1,56 +1,75 @@
-function Ball(x, y, a, r, s) {
+function Ball(x, y, angle, radius, speed) {
 
-  this.pos = createVector(x, y);
+  this.position = createVector(x, y);
 
-  this.a = a; // angle
-  this.r = r; // radius
+  this.angle = angle;
+  this.radius = radius;
 
-  this.s = s; // speed
+  this.speed = speed;
 
-  this.c = rCol();
+  this.color = randomColor();
 }
 
+/**
+ * draws the Ball
+ */
 Ball.prototype.draw = function() {
 
-  stroke(this.c);
+  stroke(this.color);
   strokeWeight(20);
 
   push();
 
+	/* draw relative to ball */
   translate(width / 2, height);
-  point(this.pos.x, this.pos.y);
+  point(this.position.x, this.position.y);
 
   pop();
 };
 
-Ball.prototype.collidesWith = function(b) {
+/**
+ * returns whether or not the Ball collides with bucket
+ */
+Ball.prototype.collidesWith = function(bucket) {
 
-  var x = this.pos.x + width / 2;
-  var y = this.pos.y + height;
+	/* calculate Ball's position */
+  var x = this.position.x + width / 2;
+  var y = this.position.y + height;
 
-  var xB = b.x + B_SIZE;
-  var yB = b.y + B_SIZE;
+	/* calculate bucket's position */
+  var xBound = bucket.x + BUCKET_SIZE;
+  var yBound = bucket.y + BUCKET_SIZE;
 
-  return !(x < b.x || x > xB || y < b.y || y > yB);
+  return !(x < bucket.x || x > xBound || y < bucket.y || y > yBound);
 };
 
+/**
+ * returns whether the Ball is offscreen
+ */
 Ball.prototype.offScreen = function() {
 
-  var x = this.pos.x + width / 2;
-  var y = this.pos.y + height;
+	/* calculate Ball's position */
+  var x = this.position.x + width / 2;
+  var y = this.position.y + height;
 
   return (x < 0 || x > width || y < 0 || y > height);
 };
 
+/**
+ * provides motion to the ball
+ */
 Ball.prototype.update = function() {
 
-  this.r += this.s;
+  this.radius += this.speed;
 
-  this.pos.x = this.r * sin(this.a);
-  this.pos.y = this.r * cos(this.a);
+  this.position.x = this.radius * sin(this.angle);
+  this.position.y = this.radius * cos(this.angle);
 };
 
-function rCol() {
+/**
+ * returns a random color
+ */
+function randomColor() {
 
   return color(0, random(155) + 100, random(155) + 100);
 }
