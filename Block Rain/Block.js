@@ -1,31 +1,50 @@
-function Block(x, yVel, s, c) {
+function Block(x, velocity, size, color) {
 
-  this.pos = createVector(x, -50);
-  this.yVel = yVel;
+  this.position = createVector(x, -50);
+  this.velocity = velocity;
 
-  this.s = s; // size
-  this.c = c; // color
+  this.size = size;
+  this.color = color;
 }
 
+/**
+ * changes position based upon velocity
+ */
 Block.prototype.update = function() {
 
-  this.pos.y += this.yVel;
+  this.position.y += this.velocity;
 };
 
+/**
+ * returns whether or not the Block was clicked
+ * according to passed x and y
+ */
 Block.prototype.isClicked = function(x, y) {
 
-  var xM = this.pos.x + this.s;
-  var yM = this.pos.y + this.s;
+  var xMaximum = this.position.x + this.size; // righter-most x
+  var yMaximum = this.position.y + this.size; // bottom-most y
 
-  return !(x < this.pos.x || x > xM || y < this.pos.y || y > yM);
+	// return NOT whether the Block WASN'T clicked
+  return !(x < this.position.x || x > xMaximum || y < this.position.y || y > yMaximum);
 };
 
+/**
+ * returns whether the block is still on-screen or not
+ */
+Block.prototype.onScreen = function() {
+
+	return this.position.y < height;
+};
+
+/**
+ * draws the Block
+ */
 Block.prototype.draw = function() {
 
   stroke(255);
   strokeWeight(3);
 
-  fill(this.c);
+  fill(this.color);
 
-  rect(this.pos.x, this.pos.y, this.s, this.s);
+  rect(this.position.x, this.position.y, this.size, this.size);
 };
