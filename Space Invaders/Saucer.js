@@ -1,83 +1,109 @@
-function Saucer(x, y, s, sh, c, e) {
+function Saucer(x, y, size, shape, color, alien) {
 
-  this.pos = createVector(x, y);
-  this.vel = createVector(0, 0);
-  this.acc = createVector(0, 0);
+  this.position = createVector(x, y);
+  this.velocity = createVector(0, 0);
+  this.acceleration = createVector(0, 0);
 
-  this.s = s; // size
-  this.sh = sh; // shape
-  this.c = c; // color
-  this.e = e; // enemy?
+  this.size = size;
+  this.shape = shape;
+  this.color = color;
+  this.alien = alien; // enemy Saucer or not
 
-  this.cd = 30; // cooldown
+  this.cooldown = 30; // intermittent between Lazer
 
-  this.intact = true;
+  this.intact = true; // whether the Saucer is destroyed or not
+	this.onScreen = true; // whether the Saucer is visible
 
-  this.lazers = [];
+  this.lazers = []; // on-screen lazers
 }
 
+/**
+ * updates position, velocity, & acceleration
+ * upates lazers
+ */
 Saucer.prototype.update = function(allShips) {
 
-  this.vel.add(this.acc);
-  this.pos.add(this.vel);
+	/* handle movement */
+  this.velocity.add(this.acceleration);
+  this.position.add(this.velocity);
+	this.position.x = constrain(this.position.x, 0, width);
 
-  this.acc = createVector(0, 0);
-  this.vel.mult(0.7);
+  this.acceleration = createVector(0, 0); // reset acceleration
+  this.velocity.mult(0.7); // friction
 
+	/* handle lazers */
   for (var i = this.lazers.length - 1; i >= 0; i--) {
+		// loop through all lazers
 
     if (this.lazers[i].onScreen) {
 
-      this.lazers[i].update();
+			/* draw & update */
+      this.lazers[i].update(allShips);
       this.lazers[i].draw();
     } else {
 
-      this.lazers.splice(i, 1);
+      this.lazers.splice(i, 1); // remove lazer from array
       continue;
-    }
-
-    for (var j = 0; j < allShips.length; j++) {
-
-      if (this.lazers[i].hits(allShips[j]) &&
-      this.lazers[i].e != allShips[j].e) {
-
-        allShips[j].intact = false;
-        this.lazers.splice(i, 1);
-        break;
-      }
     }
   }
 
-  this.cd++;
+	// update on-screen property
+	this.onScreen = (this.position.y + this.size < height);
+
+  this.cooldown++;
 };
 
+/**
+ * draws the Saucer
+ */
 Saucer.prototype.draw = function() {
 
   stroke(255);
   strokeWeight(3);
-  fill(this.c);
+  fill(this.color);
 
-  var step = TWO_PI / this.sh;
+  var step = TWO_PI / this.shape; // distance between vertices
 
   beginShape();
 
-  for (var i = PI; i < TWO_PI + PI; i += step)
-    vertex((sin(i) * this.s) + this.pos.x, (cos(i) * this.s) + this.pos.y);
+  for (var i = PI; i < TWO_PI + PI; i += step) {
+		// loop through vertices
+
+		/*
+		 * find vertices along an imaginary circle
+		 * using polar coordinates
+		 */
+		var x = (sin(i) * this.size) + this.position.x;
+		var y = (cos(i) * this.size) + this.position.y;
+		vertex(x, y);
+	}
 
   endShape(CLOSE);
-
 };
 
+/**
+ * fires the Saucer's lazer
+ */
 Saucer.prototype.shoot = function() {
 
-  if (this.cd > COOLDOWN) {
+  if (this.cooldown > COOLDOWN) {
+		// fire at will
 
-    this.lazers.push(new Lazer(this.pos.x, this.pos.y, (this.e) ? 3 : -3, this.e, rCol()));
-    this.cd = 0;
+		/* fire up lazer */
+		var x = this.position.x;
+		var	y = this.position.y;
+		var trajectory = (this.alien) ? 3 : -3; // player aims up, alien aims down
+		var lazer = new Lazer(x, y, trajectory, this.alien, randomColor());
+
+    this.lazers.push(lazer);
+    this.cooldown = 0; // reset cooldown
   }
 };
 
+/**
+ * moves the Saucer
+ */
 Saucer.prototype.move = function(x, y) {
 
-  this.acc = createVector(x, y);
+  this.acceleration = createVector(x, y);
 };
