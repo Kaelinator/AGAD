@@ -1,37 +1,47 @@
-function Ball(x, y, s, c, v) {
+function Ball(x, y, size, color, velocity) {
 
-  this.pos = createVector(x, y);
-  this.vel = createVector(0, v);
+  this.position = createVector(x, y);
+  this.velocity = velocity;
 
-  this.s = s; // size
-  this.c = c; // color
+  this.size = size;
+  this.color = color;
 
   this.onScreen = true;
 }
 
+/**
+ * draws the Ball
+ */
 Ball.prototype.draw = function() {
 
   stroke(255);
   strokeWeight(3);
-  fill(this.c);
+  fill(this.color);
 
-  ellipse(this.pos.x, this.pos.y, this.s);
+  ellipse(this.position.x, this.position.y, this.size);
 };
 
+/**
+ * handles position & onScreen values
+ */
 Ball.prototype.update = function() {
 
-  this.pos.y += this.vel.y;
+  this.position.y += this.velocity;
 
-  this.onScreen = (this.pos.y < height);
+  this.onScreen = (this.position.y < height);
 };
 
-Ball.prototype.caughtBy = function(b) {
+/**
+ * returns whether or not the Ball is
+ * caught by passed Basket
+ */
+Ball.prototype.caughtBy = function(basket) {
 
-  var x1 = b.x - HALF_B_SIZE;
-  var x2 = b.x + HALF_B_SIZE;
+  var leftX = basket.position.x - HALF_B_SIZE; // left-most X
+  var rightX = basket.position.x + HALF_B_SIZE; // right-most X
 
-  var y2 = b.y + HALF_B_SIZE;
+  var topY = basket.position.y + HALF_B_SIZE; // top-most Y
 
-  return !(this.pos.x < x1 || this.pos.x > x2 ||
-    this.pos.y < b.y || this.pos.y > y2);
+  return !(this.position.x < leftX || this.position.x > rightX ||
+    this.position.y < basket.position.y || this.position.y > topY);
 };

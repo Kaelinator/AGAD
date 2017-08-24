@@ -1,10 +1,8 @@
 const B_SIZE = 50;
 const HALF_B_SIZE = B_SIZE / 2;
 
-var basket;
-var basketColor;
-
-var orbs = [];
+var basket; // player
+var orbs = []; // falling Balls
 
 var score;
 
@@ -12,76 +10,94 @@ function setup() {
 
   createCanvas(400, 600);
 
-  basket = createVector(width / 2, height - B_SIZE);
-  basketColor = color("#000000");
+  basket = new Basket(width / 2, height - B_SIZE);
 
   score = 0;
   textAlign(CENTER);
 }
 
 function draw() {
+
   background(51);
 
-  if (frameCount % 20 === 0 && random() < ((score < 10) ? 10 : score) * 0.01)
-    orbs.push(new Ball(random(width), 0, random(20) + 10, rCol(), random(5) + 3));
+	handleOrbs();
+  attemptNewOrb(frameCount);
 
+	basket.update(mouseX);
+	basket.draw();
 
-  for (var i = orbs.length - 1; i >= 0; i--) {
+	drawScore();
+}
+
+/**
+ * updates & draws Balls in orbs array
+ * handles catching
+ * triggers endGame
+ */
+function handleOrbs() {
+
+	for (var i = orbs.length - 1; i >= 0; i--) {
+		// loop through all orbs
 
     if (orbs[i].onScreen) {
 
+			/* update & draw */
       orbs[i].update();
       orbs[i].draw();
 
       if (orbs[i].caughtBy(basket)) {
+				// we've caught the orb
 
         score += 1;
-        basketColor = lerpColor(basketColor, orbs[i].c, orbs[i].s * 0.01);
+				basket.catch(orbs[i]);
         orbs.splice(i, 1);
       }
 
     } else {
+			// Ball has gone off-screen
 
       endGame();
     }
   }
+}
 
-  textSize(40);
+/**
+ * attempts to push a new Ball to the
+ * orbs array
+ */
+function attemptNewOrb(frame) {
+
+	if (frame % 20 === 0) { // every 1/3 second
+
+		var chance = map(score, 0, 100, 0.25, 0.99);
+		if (random() < chance) {
+			// push to the orbs array
+
+			/* build Ball */
+			var color = randomColor();
+			var size = random(20) + 10;
+			var velocity = random(3) + 3;
+
+			var orb = new Ball(random(width), 0, size, color, velocity);
+			orbs.push(orb);
+		}
+	}
+}
+
+/**
+ * draws the player's score
+ */
+function drawScore() {
+
+	textSize(40);
   noStroke();
   fill(255);
   text(score, width / 2, 50);
-
-  handleBasket();
 }
 
-function handleBasket() {
-
-  basket.x = constrain(mouseX, 0, width);
-
-  var x1 = basket.x - HALF_B_SIZE;
-  var x2 = basket.x + HALF_B_SIZE;
-
-  var y1 = basket.y - HALF_B_SIZE;
-  var y2 = basket.y + HALF_B_SIZE;
-
-  /* contents */
-  fill(basketColor);
-  noStroke();
-  rect(x1, basket.y, B_SIZE, HALF_B_SIZE);
-
-  stroke(255);
-  strokeWeight(3);
-  noFill();
-
-  /* walls */
-  beginShape();
-  vertex(x1, y1);
-  vertex(x1, y2);
-  vertex(x2, y2);
-  vertex(x2, y1);
-  endShape();
-}
-
+/**
+ * ends the loop, draws game over message
+ */
 function endGame() {
 
   noLoop();
@@ -91,7 +107,10 @@ function endGame() {
   text("Game Over!", width / 2, height / 2);
 }
 
-function rCol() {
+/**
+ * returns a random color
+ */
+function randomColor() {
 
   return color(random(255), random(255), random(255));
 }
