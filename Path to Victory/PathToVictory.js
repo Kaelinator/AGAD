@@ -1,158 +1,162 @@
 
-var gridWidth = 5;
-var gridHeight = 5;
+var gridSize = 5;
 
 var grid = [];
-var path = [];
-var steps = [];
+var path = []; // correct path
+var steps = []; // player's path
 
-var size;
+var tileSize; // size of each Tile
 
-var state; // 0 = animation & 1 = playing
-var animation;
-var score;
-var time;
+var animating; // false = playing
+var animationTime; // frame in the animation for the steps
+var stepTime; // how long each step is shown for
+
+var level;
+
+var gameOver; // synchonized flag to end the game
+var newLevel; // synchonized flag to create new level
 
 function setup() {
-  createCanvas(window.innerWidth - 50, window.innerHeight - 50);
 
-  score = 1;
-  time = 60;
+  createCanvas(window.innerWidth, window.innerHeight);
 
-  initGrid();
+	/* initialize values */
+  level = 1;
+  stepTime = 60;
+
+	newLevel = false;
+	gameOver = false;
+
   newPath();
 
   textAlign(CENTER);
-  textSize(size * 0.8);
+  textSize(tileSize * 0.8);
 }
 
 function draw() {
+
   background(51);
 
-  if (state === 0)
-    animate();
+	drawGrid();
+	drawLevel();
 
-  drawGrid();
-
-  if (!onPath())
-    endGame();
-
-  if (steps.length === path.length) {
-
-    nextLevel();
-  }
-
-  noStroke();
-  fill("#FF0000");
-  text("Level " + score, width / 2, size);
+	pollTasks();
 }
 
+function pollTasks() {
+
+	if (animating) {
+
+		handleAnimation();
+	}
+
+	if (newLevel) {
+
+		nextLevel();
+	}
+
+	if (gameOver) {
+
+		endGame();
+	}
+}
+
+/**
+ * handles user input
+ * handles correctness & levels
+ */
 function mousePressed() {
 
-  if (state === 0)
+
+  if (animating) {
+		// don't allow input during animation
+		return;
+	}
+
+  var clickedTile = getTile(mouseX, mouseY);
+
+  if (clickedTile == null)
     return;
 
-  var tile = null;
+  steps.push(clickedTile); // add to inputs
 
-  for (var x = 0; x < gridWidth; x++)
-    for (var y = 0; y < gridHeight; y++)
-      if (grid[x][y].clickedBy(mouseX, mouseY))
-        tile = grid[x][y];
+  grid[clickedTile.x][clickedTile.y].lit = true; // display
 
-  if (tile == null)
-    return;
+	/* check for correctness */
+	if (!onPath(path, steps)) {
 
-  steps.push(tile);
+		gameOver = true;
+	}
 
-  grid[tile.x][tile.y].lit = true;
+	/* check for a new level */
+	if (steps.length == path.length) {
+
+    newLevel = true;
+	}
 }
 
+/**
+ * draws the grid
+ */
 function drawGrid() {
 
   strokeWeight(4);
   stroke(255);
 
-  for (var x = 0; x < gridWidth; x++) {
-    for (var y = 0; y < gridHeight; y++) {
+  for (var x = 0; x < gridSize; x++) {
+    for (var y = 0; y < gridSize; y++) {
 
-      if (grid[x][y].lit)
-        fill(200);
-      else
-        noFill();
-
-      rect(x * size, y * size, size, size);
+      grid[x][y].draw();
     }
   }
-
 }
 
-function animate() {
-  animation++;
+/**
+ * draws the current level
+ */
+function drawLevel() {
 
-  var route = Math.floor(animation / time);
+	noStroke();
+	fill("#FF0000");
+	text("Level " + level, width / 2, tileSize);
+}
+
+/**
+ * animates the path to the screen
+ * meant to be called every frame with the state of 0
+ */
+function handleAnimation() {
+
+  animationTime++;
+
+  var route = Math.floor(animationTime / stepTime); // what step we're on
 
   if (route >= path.length) {
+		// done animating
 
-    state = 1; // done animating
-    initGrid();
+    animating = false; // now playing
+    resetGrid();
     return;
   }
 
+	/* display the next step */
   var tile = path[route];
   grid[tile.x][tile.y].lit = true;
 }
 
-function newPath() {
-
-  initGrid();
-  state = 0; // animating
-  animation = 0; // time
-  path = [];
-  steps = [];
-
-  console.log(gridHeight);
-  path.push(new Tile(0, gridHeight - 1, true));
-
-  while (path[path.length - 1].y !== 0) {
-
-    var pool = [];
-    var prevTile = path[path.length - 1];
-
-    var left = new Tile(prevTile.x - 1, prevTile.y, true);
-    var right = new Tile(prevTile.x + 1, prevTile.y, true);
-    var up = new Tile(prevTile.x, prevTile.y - 1, true);
-
-    if (left.x >= 0 && !arrIncludes(path, left))
-      pool.push(left);
-
-    if (right.x < gridWidth && !arrIncludes(path, right))
-      pool.push(right);
-
-    if (up.y < gridHeight && !arrIncludes(path, up))
-      pool.push(up);
-
-    path.push(random(pool));
-  }
-}
-
-function onPath() {
-
-  for (var i = 0; i < steps.length; i++)
-    if (path[i].x !== steps[i].x || path[i].y !== steps[i].y)
-      return false;
-
-  return true;
-}
-
-function initGrid() {
+/**
+ * returns an initialized grid
+ */
+function resetGrid() {
 
   grid = [];
 
-  size = Math.min(width / gridWidth, height / gridHeight);
+  tileSize = Math.min(width / gridSize, height / gridSize);
 
-  for (var x = 0; x < gridWidth; x++) {
+	/* creates 2D array */
+  for (var x = 0; x < gridSize; x++) {
     var col = [];
-    for (var y = 0; y < gridHeight; y++) {
+    for (var y = 0; y < gridSize; y++) {
 
       col.push(new Tile(x, y, false));
     }
@@ -161,30 +165,27 @@ function initGrid() {
 
 };
 
+/**
+ * sets up for a new level
+ */
 function nextLevel() {
 
-  score++;
-  gridWidth++;
-  gridHeight++;
+  level++;
+  gridSize++;
   newPath();
-  time /= 1.25;
-  initGrid();
+  stepTime /= 1.25;
+  resetGrid();
+	newLevel = false;
 }
 
+/**
+ * ends the game, draws game over message
+ */
 function endGame() {
 
+	noLoop();
   noStroke();
   fill("#FF0000");
   text("Game Over!", width / 2, height / 2);
-  noLoop();
-}
-
-function arrIncludes(pool, tile) {
-
-  var t = JSON.stringify(tile);
-  for (var i = 0; i < pool.length; i++)
-    if (JSON.stringify(pool[i]) === t)
-      return true;
-
-  return false;
+	gameOver = false;
 }
