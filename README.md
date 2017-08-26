@@ -1,7 +1,13 @@
 # A Game A Day
 
 ### Demos
+<img src="img.jpg" alt="Drawing" style="width: 200px;"/>
+<link href="README.css" type="text/css" rel="stylesheet"/>
+Game | Demo | Creation | Refactoring
+:---: | --- | --- | ---
+[Ant Smasher](https://kaelinator.github.io/AGAD/Ant%20Smasher) | ![ant-smasher](https://user-images.githubusercontent.com/397632/29246279-a8fce6ea-7fb1-11e7-9790-aa1ba63e37ed.gif) | ipsum | dolor
 
+<!--
 1. [Ant Smasher](https://kaelinator.github.io/AGAD/Ant%20Smasher)
     ![ant-smasher](https://user-images.githubusercontent.com/397632/29246279-a8fce6ea-7fb1-11e7-9790-aa1ba63e37ed.gif)
 1. [Asteroids](https://kaelinator.github.io/AGAD/Asteroids)
@@ -30,5 +36,4 @@
 1. [Tetris](https://kaelinator.github.io/AGAD/Tetris)
 1. [Tron](https://kaelinator.github.io/AGAD/Tron)
 1. [ZType](https://kaelinator.github.io/AGAD/ZType)
-
-
+-->
