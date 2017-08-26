@@ -4,11 +4,11 @@
 
 Game | Demo | Creation | Refactoring
 :---: | --- | --- | ---
-[Ant Smasher](https://kaelinator.github.io/AGAD/Ant%20Smasher) | <img src="https://user-images.githubusercontent.com/397632/29246279-a8fce6ea-7fb1-11e7-9790-aa1ba63e37ed.gif" alt="ant-smasher" style="width: 150px;"/> | [![Pong](http://img.youtube.com/vi/DhRJb58tOlA/0.jpg)](http://www.youtube.com/watch?v=DhRJb58tOlA "Javascript Pong") | dolor
+[Ant Smasher](https://kaelinator.github.io/AGAD/Ant%20Smasher) | ![ant-smasher](https://user-images.githubusercontent.com/397632/29246279-a8fce6ea-7fb1-11e7-9790-aa1ba63e37ed.gif) | [![Pong](http://img.youtube.com/vi/DhRJb58tOlA/0.jpg)](http://www.youtube.com/watch?v=DhRJb58tOlA "Javascript Pong") | [![Pong](http://img.youtube.com/vi/vMswbPknIns/0.jpg)](http://www.youtube.com/watch?v=vMswbPknIns "Refactoring Pong")
 
 <!--
 1. [Ant Smasher](https://kaelinator.github.io/AGAD/Ant%20Smasher)
-    ![ant-smasher](https://user-images.githubusercontent.com/397632/29246279-a8fce6ea-7fb1-11e7-9790-aa1ba63e37ed.gif)
+    ![ant-smasher](https://user-images.githubusercontent.com/397632/29246279-a8fce6ea-7fb1-11e7-9790-aa1ba63e37ed.gif)<img src="https://user-images.githubusercontent.com/397632/29246279-a8fce6ea-7fb1-11e7-9790-aa1ba63e37ed.gif" alt="ant-smasher" style="width: 150px;"/>
 1. [Asteroids](https://kaelinator.github.io/AGAD/Asteroids)
     ![asteroids](https://user-images.githubusercontent.com/397632/29246283-ac7fa9a6-7fb1-11e7-8992-090faa6d3bb2.gif)
 1. [Block Rain](https://kaelinator.github.io/AGAD/Block%20Rain)
