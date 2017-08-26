@@ -4,7 +4,7 @@
 
 Game | Demo | Creation | Refactoring
 :---: | --- | --- | ---
-[Ant Smasher](https://kaelinator.github.io/AGAD/Ant%20Smasher) | <img src="https://user-images.githubusercontent.com/397632/29246279-a8fce6ea-7fb1-11e7-9790-aa1ba63e37ed.gif" alt="ant-smasher" style="width: 150px;"/> | ipsum | dolor
+[Ant Smasher](https://kaelinator.github.io/AGAD/Ant%20Smasher) | <img src="https://user-images.githubusercontent.com/397632/29246279-a8fce6ea-7fb1-11e7-9790-aa1ba63e37ed.gif" alt="ant-smasher" style="width: 150px;"/> | [![Pong](http://img.youtube.com/vi/DhRJb58tOlA/0.jpg)](http://www.youtube.com/watch?v=DhRJb58tOlA "Javascript Pong") | dolor
 
 <!--
 1. [Ant Smasher](https://kaelinator.github.io/AGAD/Ant%20Smasher)
