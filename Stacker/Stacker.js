@@ -69,7 +69,7 @@ function keyPressed() {
 
   score = y;
 
-  grid.push(new Row((y > MID_HEIGHT) ? MID_HEIGHT : y, cellCount)); // push new Rpw
+  grid.push(new Row((y > MID_HEIGHT) ? MID_HEIGHT : y, cellCount)); // push new Row
 }
 
 /**
