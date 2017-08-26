@@ -1,114 +1,120 @@
-function Row(y, c) {
+function Row(y, cellCount) {
 
-  this.xV = 1;
+  this.velocity = 1; // X-velocity
   this.y = y;
 
-  this.c = c; // count
+  this.cellCount = cellCount; // how many cells are avaliable
 
-  this.tiles = [];
+  this.cells = [];
 
-  this.dynamic = true;
+  this.dynamic = true; // false = static
 
-  this.initRow(c);
+  this.initializeRow(cellCount);
 }
 
 Row.prototype.update = function() {
 
-  if (this.xV > 0) {
+  if (this.velocity > 0) {
     /* moving to the right */
 
     for (var x = WIDTH - 1; x >= 0; x--) {
 
-      if (this.tiles[x]) {
+      if (!this.cells[x]) // no need to update
+				continue;
 
-        if (x < WIDTH - 1) {
+			if (x < WIDTH - 1) {
 
-          if (this.tiles[x + 1]) {
+				this.cells[x] = false;
+				this.cells[x + 1] = true;
+			} else {
 
-            this.reverse();
-          } else {
-
-            this.tiles[x] = false;
-            this.tiles[x + 1] = true;
-          }
-        } else {
-
-          this.reverse();
-        }
-      }
+				this.reverse();
+				break;
+			}
     }
   } else {
     /* moving to the left */
 
     for (var x = 0; x < WIDTH; x++) {
 
-      if (this.tiles[x]) {
+      if (!this.cells[x]) // no need to update
+				continue;
 
-        if (x > 0) {
+			if (x > 0) {
 
-          if (this.tiles[x - 1]) {
+				this.cells[x] = false;
+				this.cells[x - 1] = true;
+			} else {
 
-            this.reverse();
-          } else {
-
-            this.tiles[x] = false;
-            this.tiles[x - 1] = true;
-          }
-        } else {
-
-          this.reverse();
-        }
-      }
+				this.reverse();
+				break;
+			}
     }
   }
 };
 
+/**
+ * draws each cell
+ */
 Row.prototype.draw = function(size) {
 
   for (var x = 0; x < WIDTH; x++) {
 
-    if (this.tiles[x])
+    if (this.cells[x]) // if the cell is occupied
       rect(x * size, height - ((this.y + 1) * size), size, size);
   }
 };
 
-Row.prototype.stop = function(r) {
+/**
+ * freezes the Row
+ * returns how many cells have a base
+ */
+Row.prototype.stop = function(previousRow) {
 
-  if (r) {
+  if (previousRow) {
 
-    var tC = 0;
+    var cellCount = 0; // remaining cells
     for (var x = 0; x < WIDTH; x++) {
 
-      if (this.tiles[x] && r.tiles[x]) {
+      if (this.cells[x] && previousRow.cells[x]) {
+				// cells have a base on which to reside
 
-        this.tiles[x] = true;
-        tC++;
+        this.cells[x] = true;
+        cellCount++;
       } else {
-        this.tiles[x] = false;
+				// no base, no cell
+
+        this.cells[x] = false;
       }
     }
 
     this.dynamic = false;
-    return tC;
+    return cellCount;
   } else {
+		// first row to be placed
 
     this.dynamic = false;
-    return this.c;
+    return this.cellCount;
   }
 
 };
 
+/**
+ * bounces the Row into reverse
+ */
 Row.prototype.reverse = function() {
 
-  this.xV *= -1;
-  this.update();
+  this.velocity *= -1;
   this.update();
 };
 
-Row.prototype.initRow = function(c) {
+/**
+ * pushes the correct number of cells to the Row
+ */
+Row.prototype.initializeRow = function(c) {
 
   for (var x = 0; x < WIDTH; x++) {
 
-    this.tiles.push((x < c));
+    this.cells.push((x < c));
   }
 };
