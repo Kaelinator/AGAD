@@ -1,0 +1,241 @@
+<! doctype html>
+< html  lang = " en " >
+< head >
+	< meta  karakter takımı = " UTF-8 " >
+	< title > Pong </ title >
+
+	<! - Tuvali merkezleyen temel stil ->
+	< stil >
+	tuval {
+		ekran : blok ;
+		pozisyon : mutlak ;
+		kenar boşluğu : otomatik ;
+		üst : 0 ;
+		alt : 0 ;
+		sol : 0 ;
+		sağa : 0 ;
+	}
+	< / style >
+</ head >
+< body >
+< script >
+var
+/ * *
+ * Sabitler
+ * /
+WIDTH   =  700 ,
+YÜKSEK  =  600 ,
+pi =  Matematik . PI ,
+UpArrow     =  38 ,
+DownArrow =  40 ,
+/ * *
+ * Oyun elemanları
+ * /
+tuval,
+ctx,
+keystate,
+/ * *
+ * Oyuncu raketi
+ * 
+ * @type {Object}
+ * /
+oyuncu = {
+	x :  boş ,
+	Y :  boş ,
+	genişlik :   20 ,
+	Yükseklik :  100 ,
+	/ **
+	 * Basılı tuşlara bağlı olarak konumu güncelleyin
+	 * /
+	güncelleme :  function () {
+		Eğer (keystate [uparrow]) Bu . y  - =  7 ;
+		Eğer (keystate [DOWNARROW]) Bu . y  + =  7 ;
+		// raketi tuvalin içinde saklayın
+		bu . y  =  Matematik . Maksimum ( Math . dak ( bu . Y , YÜKSEKLİK  -  bu . yükseklik ), 0 );
+	},
+	/ **
+	 * Oyuncu küreklerini tuvale çizin
+	 * /
+	çizmek :  function () {
+		ctx . fillRect ( this . x , this . y , bu . width , this . height );
+	}
+},
+/ * *
+ * Ai kürek
+ * 
+ * @type {Object}
+ * /
+ai = {
+	x :  boş ,
+	Y :  boş ,
+	genişlik :   20 ,
+	Yükseklik :  100 ,
+	/ **
+	 * Topu pozisyonuna bağlı olarak pozisyonu güncelleyin
+	 * /
+	güncelleme :  function () {
+		// ideal pozisyonu hesaplar
+		var desty =  top . y  - ( bu . yükseklik  -  top . taraf ) * 0.5 ;
+		// hareketi ideal konuma doğru rahatlatır
+		bu . y  + = (desty -  this . y ) *  0,1 ;
+		// raketi tuvalin içinde saklayın
+		bu . y  =  Matematik . Maksimum ( Math . dak ( bu . Y , YÜKSEKLİK  -  bu . yükseklik ), 0 );
+	},
+	/ **
+	 * Ai kürek tuvali çizin
+	 * /
+	çizmek :  function () {
+		ctx . fillRect ( this . x , this . y , bu . width , this . height );
+	}
+},
+/ * *	
+ * Top nesnesi
+ * 
+ * @type {Object}
+ * /
+top = {
+	x :    boş ,
+	Y :    boş ,
+	vel :  boş ,
+	taraf :   20 ,
+	hız :  12 ,
+	/ **
+	 * Topu belirtilen tarafa doğru kullanır
+	 * 
+	 * @param   {sayı}  yan 1 sağ
+	 * -1 kaldı
+	 * /
+	hizmet :  işlev ( yan ) {
+		// x ve y konumunu ayarla
+		var r =  Matematik . rastgele ();
+		bu . x  = side === 1  ?  oyuncu . x + oyuncu . genişlik  :  ai . x  -  bu . taraf ;
+		bu . Y  = ( YÜKSEKLİK  -  bu . tarafı ) * R;
+		// y ekseninde yüksek açı, daha yüksek / düşük hesapla =>
+		// dik açı
+		var phi =  0.1 * pi * ( 1  -  2 x r);
+		// hız yönünü ve büyüklüğünü ayarla
+		bu . vel  = {
+			x : side * bu . hız * Matematik . çünkü (phi),
+			y :  bu . hız * Matematik . günah (phi)
+		}
+	},
+	/ **
+	 * Topu pozisyonunu güncelleyin ve tuvalde saklayın
+	 * /
+	güncelleme :  function () {
+		// mevcut hız ile pozisyon güncelleme
+		bu . x  + =  bu . vel . x ;
+		bu . y  + =  bu . vel . y ;
+		// y yönünde tuvalin dışına çıkıp çıkmadığını kontrol edin
+		eğer ( 0  >  this . y  ||  this . y + bu . side  >  HEIGHT ) {
+			// doğru ofseti hesaplayın ve ekleyin, yani ne kadar uzak
+			// tuvalin içinde topu
+			var offset =  bu . vel . y  <  0  ?  0  -  bu . Y  :  YÜKSEKLİK  - ( bu . y + bu . yan );
+			bu . y  + =  2 * ofset;
+			// y hızını yansıtın
+			bu . vel . y  * =  - 1 ;
+		}
+		// iki arasında intesectiont kontrol etmek için yardımcı fonksiyonu
+		// eksenle hizalanan sınırlayıcı boxex (AABB)
+		var  AABBIntersect  =  işlevi ( ax , ay , aw , ah , bx , by , bw , bh ) {
+			dönüş baltası < bx + bw && ay < by + bh && bx < ax + aw && ile < ay + ah;
+		};
+		// x çarpışmayı kontrol etmek için hedef kürekleri kontrol edin
+		// yön
+		var pdle =  bu . vel . x  <  0  ? oyuncu : ai;
+		Eğer ( AABBIntersect ( pdle . X , pdle . y , pdle . genişliği , pdle . yüksekliği ,
+				bu . x , bu . y , bu . Bu , yan . taraf )
+		) {	
+			// x konumunu ayarlayın ve yansıma açısını hesaplayın
+			bu . x  = pdle === oyuncu ?  oyuncu . x + oyuncu . genişlik  :  ai . x  -  bu . taraf ;
+			var N = ( bu . y + bu . tarafında  -  pdle . y ) / ( pdle . yükseklik + bu . yan );
+			var phi =  0.25 * pi * ( 2 * N -  1 ); // pi / 4 = 45
+			// şut değerini hesaplar ve hızını günceller
+			var şut =  Matematik . abs (phi) >  0,2 * pi ?  1,5  :  1 ;
+			bu . vel . x  = şut * (pdle === oyuncu ?  1  :  - 1 ) * bu . hız * Matematik . çünkü (phi);
+			bu . vel . y  = şut * bu . hız * Matematik . sin (phi);
+		}
+		// tuvalin dışında top olduğunda topu sıfırlayın
+		// x yönü
+		eğer ( 0  >  this . x + this . side  ||  this . x  >  WIDTH ) {
+			bu . servis (pdle === oyuncu ?  1  :  - 1 );
+		}
+	},
+	/ **
+	 * Topu tuvale çiz
+	 * /
+	çizmek :  function () {
+		ctx . fillRect ( bu . X , bu . y , bu . yandan , bu . yan );
+	}
+};
+/ * *
+ * Oyunu başlatır
+ * /
+işlev  ana () {
+	// oyun kanunu oluşturma, başlatma ve ekleme
+	tuval =  belge . createElement ( " canvas " );
+	kanvas . genişlik  =  WIDTH ;
+	kanvas . yükseklik  =  YÜKSEKLİK ;
+	ctx =  tuval . getContext ( " 2d " );
+	Belge . Vücut . appendChild (tuval);
+	keystate = {};
+	// klavye preslerini takip edin
+	Belge . addEventListener ( " keydown " , işlev ( evt ) {
+		anahtar [ evt . keyCode ] =  true ;
+	});
+	Belge . addEventListener ( " keyup " , işlev ( evt ) {
+		Silmek keystate [ evt . keyCode ];
+	});
+	init (); // oyun nesnelerini başlat
+	// oyun döngüsü işlevi
+	var  döngü  =  işlev () {
+		update ();
+		draw ();
+		pencere . requestAnimationFrame (döngü, tuval);
+	};
+	pencere . requestAnimationFrame (döngü, tuval);
+}
+/ * *
+ * Initatite oyun nesneleri ve başlangıç ​​pozisyonları ayarlayın
+ * /
+işlev  init () {
+	oyuncu . x  =  oyuncu . genişlik ;
+	oyuncu . y  = ( HEIGHT  -  oyuncu . yükseklik ) / 2 ;
+	ai . X  =  EN  - ( oyuncu . genişliği  +  AI . genişliği );
+	ai . y  = ( YÜKSEKLİK  -  ai . yükseklik ) / 2 ;
+	top . servis ( 1 );
+}
+/ * *
+ * Tüm oyun nesnelerini güncelle
+ * /
+işlev  güncellemesi () {
+	top . update ();
+	oyuncu . update ();
+	ai . update ();
+}
+/ * *
+ * Tuvali temizle ve tüm oyun nesnelerini ve net çiz
+ * /
+işlev  draw () {
+	ctx . fillRect ( 0 , 0 , WIDTH , HEIGHT );
+	ctx . save ();
+	ctx . fillStyle  =  " #fff " ;
+	top . draw ();
+	oyuncu . draw ();
+	ai . draw ();
+	// net çiz
+	var w =  4 ;
+	var x = ( WIDTH  - w) * 0.5 ;
+	var y =  0 ;
+	var adım =  YÜKSEKLİK / 20 ; // kaç tane net segment
+	iken (y <  HEIGHT ) {
+		ctx . fillRect (x, y + adım * 0.25 , w, adım * 0.5 );
+		y + = adım;
+	}
+	ctx . restore ();
+}
+// oyunu başlat ve çalıştır
+ana ();
+< / script >
+</ body >
+</ html >
